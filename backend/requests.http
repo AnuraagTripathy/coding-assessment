@@ -1,0 +1,100 @@
+### Variables
+@baseUrl = http://localhost:8000
+@username = testuser
+@password = securepassword123
+@email = testuser@example.com
+@fullName = Test User
+
+### Register a new user
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "email": "{{email}}",
+  "full_name": "{{fullName}}",
+  "password": "{{password}}"
+}
+
+### Login and get access token
+# @name login
+POST {{baseUrl}}/token
+Content-Type: application/x-www-form-urlencoded
+
+username={{username}}&password={{password}}
+
+### Capture token from login response
+@authToken = {{login.response.body.access_token}}
+
+### Get current user info
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+
+### Access protected resource
+GET {{baseUrl}}/protected-resource
+Authorization: Bearer {{authToken}}
+
+### Try to access protected resource without token (should fail)
+GET {{baseUrl}}/protected-resource
+
+### Register another user
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "anotheruser",
+  "email": "another@example.com",
+  "full_name": "Another User",
+  "password": "password456"
+}
+
+### Login with another user
+# @name anotherLogin
+POST {{baseUrl}}/token
+Content-Type: application/x-www-form-urlencoded
+
+username=anotheruser&password=password456
+
+### Capture token for another user
+@anotherAuthToken = {{anotherLogin.response.body.access_token}}
+
+### Get another user info
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{anotherAuthToken}}
+
+### Get all products (using first user's token)
+GET {{baseUrl}}/products
+Authorization: Bearer {{authToken}}
+
+### Get all products (using second user's token) 
+GET {{baseUrl}}/products
+Authorization: Bearer {{anotherAuthToken}}
+
+### Get only my products (first user)
+GET {{baseUrl}}/my-products
+Authorization: Bearer {{authToken}}
+
+### Get only my products (second user)
+GET {{baseUrl}}/my-products
+Authorization: Bearer {{anotherAuthToken}}
+
+### Note: The following endpoints need to be implemented on the server side
+### to associate products with users. The current FastAPI server doesn't have these yet.
+
+### Assign product to first user (example endpoint - needs to be implemented)
+POST {{baseUrl}}/assign-product
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "product_id": 1
+}
+
+### Assign product to second user (example endpoint - needs to be implemented)
+POST {{baseUrl}}/assign-product
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "product_id": 2
+}
